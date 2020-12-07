@@ -6,6 +6,7 @@ function mask = binary_mask(I, threshold)
         for j = 1:width 
             if I(i,j) > threshold
                 mask(i,j) = 1;
-        end 
+            end 
+        end
     end
 end
