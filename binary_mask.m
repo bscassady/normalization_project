@@ -4,7 +4,7 @@ function mask = binary_mask(I, threshold)
     mask = zeros(height,width);
     for i = 1:height  
         for j = 1:width 
-            if im(i,j) > threshold
+            if I(i,j) > threshold
                 mask(i,j) = 1;
         end 
     end
