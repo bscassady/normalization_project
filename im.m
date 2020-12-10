@@ -1,3 +1,5 @@
+% Read all data with rotation
+
 A1 = imrotate(niftiread('A1.nii'),90);
 A1mask = imrotate(niftiread('A1mask.nii'),90);
 A2 = imrotate(niftiread('A2.nii'),90);
