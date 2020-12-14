@@ -1,37 +1,23 @@
-brain = B1;
+%%
+    
 
 % Display brain's image
 colormap('gray'), subplot(1,2,1);
-imagesc(brain);
+imagesc(B1);
 
 % Create binary mask of brain and display it
-BiMa = binary_mask(brain, 80);
-[M,N] = size(BiMa);
-subplot(1,2,2); imagesc(BiMa);
+BiMaB1 = binary_mask(V, 80);
+subplot(1,2,2); imagesc(BiMaB1);
 
 % Create Bounding ellipse and display it on mask
-el = regionprops(BiMa, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
 
-subplot(1,2,2); imshow(BiMa);
-t = linspace(0,2*pi,50);
-    hold on
-    for k = 1:length(el)
-        a = el(k).MajorAxisLength/2;
-        b = el(k).MinorAxisLength/2;
-        Xc = el(k).Centroid(1);
-        Yc = el(k).Centroid(2);
-        phi = deg2rad(-el(k).Orientation);
-        x = Xc + a*cos(t)*cos(phi) - b*sin(t)*sin(phi);
-        y = Yc + a*cos(t)*sin(phi) + b*sin(t)*cos(phi);
-        plot(x,y,'r','Linewidth',5);
-        plot(Xc,Yc,'b','Linewidth',5);
-    end
-    hold off
+
     
 % A_line = BiMa;
 % The median vertical line of the image is shown in white
 % imshow(A_line, [0 255]); title('Original rotated image with the median vertical axis of the image (white)');
 % mask = center_image(BiMa);
+
 
 % Create Bounding Box (BB) and display it on the mask
 BB = regionprops(BiMa, 'BoundingBox'); % Returns x, y, w & h : position of the upper left corner and width and length of rectangle resp.
@@ -52,16 +38,25 @@ proportion_pixels_communs
 % regression on original image
 % % and calculate distance from this point to line D
 % % Gather distances in a map and connect dots
-% dist_map = containers.Map;
-% for x = BB.BoundingBox(1) : (BB.BoundingBox(1) + BB.BoundingBox(3))
-%     for y = BB.BoundingBox(2) : (BB.BoundingBox(2) + BB.BoundingBox(4))
-%         if brain(x,y) == 0
-%             
-%         end
-%     end
-% end
+
+dist_map = containers.Map;
+for x = BB.BoundingBox(1) : (BB.BoundingBox(1) + BB.BoundingBox(3))
+    for y = BB.BoundingBox(2) : (BB.BoundingBox(2) + BB.BoundingBox(4))
+
+        if V(int16(x),int16(y)) == 0
+        end
+        if brain(x,y) == 0
+
+        end
+    end
+end
+
+
 
 % Functions
+
+
+
 function new_im = shift_image(im, shift)
     [M,N]=size(im);
     if (shift>0)
@@ -71,7 +66,7 @@ function new_im = shift_image(im, shift)
     else
         new_im = im;
     end
-end    
+end 
     
 function new_im = center_image(im)
     el = regionprops(im, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
