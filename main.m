@@ -42,20 +42,24 @@ x = [(BB.BoundingBox(1) + BB.BoundingBox(3)/2) (BB.BoundingBox(1) + BB.BoundingB
 y = [BB.BoundingBox(2) (BB.BoundingBox(2) + BB.BoundingBox(4))];
 subplot(1,2,1), line(x,y, 'Color','red','LineWidth',2); %Approximation not good
 
+% 2.3.1 Superposition des deux hémisphères
+proportion_pixels_communs = similarity(B1, B1, 80);
+proportion_pixels_communs
+
 % Create a method to find line to line the position of the longitudinal fissure and give a map of uncertainty of its position
 % % Loop to go through image inside bounding box
 % % Get intensity profile and detect when == 0 : if == 0 draw linear
 % regression on original image
 % % and calculate distance from this point to line D
 % % Gather distances in a map and connect dots
-dist_map = containers.Map;
-for x = BB.BoundingBox(1) : (BB.BoundingBox(1) + BB.BoundingBox(3))
-    for y = BB.BoundingBox(2) : (BB.BoundingBox(2) + BB.BoundingBox(4))
-        if brain(x,y) == 0
-            
-        end
-    end
-end
+% dist_map = containers.Map;
+% for x = BB.BoundingBox(1) : (BB.BoundingBox(1) + BB.BoundingBox(3))
+%     for y = BB.BoundingBox(2) : (BB.BoundingBox(2) + BB.BoundingBox(4))
+%         if brain(x,y) == 0
+%             
+%         end
+%     end
+% end
 
 % Functions
 function new_im = shift_image(im, shift)
