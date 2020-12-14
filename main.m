@@ -1,19 +1,40 @@
 
 V = niftiread('data/B1.nii');
+figure(1);
 subplot(1,2,1);
 imagesc(V);
 maskV = binary_mask(V, 80);
+subplot(1,2,2);imshow(maskV);
+%CENTERING AND DRAWING ELLIPSE
+el = regionprops(maskV, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
 maskV = imrotate(maskV,90);
 [M,N] = size(maskV);
 
 propsV = regionprops(maskV, 'BoundingBox');
 bbxV = vertcat(propsV.BoundingBox);
-maskV = center_image(maskV);
-el = regionprops(maskV, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
+center = el(1).Centroid(2); 
+shift1 = center - N/2;%Shift necessary to center the image
+V_shift = shift_image(maskV, shift1); 
+figure(2);
+subplot(1,2,1);imshow(V_shift);% shift the center of the ellipse on the median vertical line of the image
+angle1 = -el(1).Orientation;
+V_rot = imrotate(V_shift, angle1);% rotate the brain
+[M2, N2] = size(V_rot);
+if mod(N2,2)==1 
+    N2 = N2-1;
+    V_rot = V_rot(:, 1:N2);
+end
+V_line = V_rot;
+V_line(:,int16(N2/2))=ones(M2,1)*255; %The brain should be centered 
 
-subplot(1,2,2); imshow(maskV);
+
+
+
+subplot(1,2,2); imshow(V_line);
+%Drawing of the ellipse around the centered brain.
+el = regionprops(V_rot, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
 t = linspace(0,2*pi,50);
-    hold on
+hold on
     for k = 1:length(el)
         a = el(k).MajorAxisLength/2;
         b = el(k).MinorAxisLength/2;
@@ -25,25 +46,20 @@ t = linspace(0,2*pi,50);
         plot(x,y,'r','Linewidth',5);
         plot(Xc,Yc,'b','Linewidth',5);
     end
-    hold off
+hold off
 
-    
+
    
 
+%%
     
-
-    
- %A_line = maskV;
- % % the median vertical line of the image is shown in white
-    %imshow(A_line, [0 255]); title('Original rotated image with the median vertical axis of the image (white)');
-
 
 % Display brain's image
 colormap('gray'), subplot(1,2,1);
-imagesc(B1);
+%imagesc(B1);
 
 % Create binary mask of brain and display it
-BiMaB1 = binary_mask(B1, 80);
+BiMaB1 = binary_mask(V, 80);
 subplot(1,2,2); imagesc(BiMaB1);
 
 % Create Bounding ellipse and display it on mask
@@ -65,7 +81,7 @@ line(x,y, 'Color','red','LineWidth',2); %Approximation not good
 dist_map = containers.Map;
 for x = BB.BoundingBox(1) : (BB.BoundingBox(1) + BB.BoundingBox(3))
     for y = BB.BoundingBox(2) : (BB.BoundingBox(2) + BB.BoundingBox(4))
-        if B1(x,y) == 0
+        if V(int16(x),int16(y)) == 0
             
         end
     end
@@ -81,7 +97,7 @@ function new_im = shift_image(im, shift)
     else
         new_im = im;
     end
-end    
+end 
     
 function new_im = center_image(im)
     el = regionprops(im, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
