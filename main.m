@@ -1,9 +1,7 @@
-brain = B1;
+V = B1;
 
-
-V = niftiread('data/B1.nii');
 figure(1);
-subplot(1,2,1);
+subplot(1,2,1), colormap('gray');
 imagesc(V);
 %Create a binary mask of the image
 maskV = binary_mask(V, 80);
@@ -31,9 +29,6 @@ end
 V_line = V_rot;
 V_line(:,int16(N2/2))=ones(M2,1)*255; %The brain should be centered 
 
-
-
-
 subplot(1,2,2); imshow(V_line);
 
 
@@ -53,8 +48,8 @@ hold on
         phi = deg2rad(-el(k).Orientation);
         x = Xc + a*cos(t)*cos(phi) - b*sin(t)*sin(phi);
         y = Yc + a*cos(t)*sin(phi) + b*sin(t)*cos(phi);
-        plot(x,y,'r','Linewidth',5);
-        plot(Xc,Yc,'b','Linewidth',5);
+        plot(x,y,'r','Linewidth',2);
+        plot(Xc,Yc,'b','Linewidth',2);
     end
 
 hold off
@@ -98,24 +93,22 @@ subplot(1,2,1), line(x,y, 'Color','red','LineWidth',2); %Approximation not good
 % regression on original image
 % % and calculate distance from this point to line D
 % % Gather distances in a map and connect dots
-dist_map = containers.Map;
-for x = BB.BoundingBox(1) : (BB.BoundingBox(1) + BB.BoundingBox(3))
-    for y = BB.BoundingBox(2) : (BB.BoundingBox(2) + BB.BoundingBox(4))
 
-        if V(int16(x),int16(y)) == 0
-        end
-        if brain(x,y) == 0
+Xpos = zeros(Height_BB,1); % Position en x des points centraux du cerveau
+dist_map = zeros(Height_BB,1); % Distance entre Ypos et Xpos_D
+i = 1;
 
-        end
-    end
+for y = Y_BB:(Y_BB + Height_BB)
+    profile = brain(X_BB : X_BB + Width_BB,y); % Creer le profil d'intensite
+    derivative = diff(profile); % Derivee de proche en proche du profil
+    [maxi,Xmax] = max(derivative); % Get max of derivative
+    [mini,Xmin] = min(derivative); % Get min of derivative
+    Xpos(i) = Xmin + (Xmax - Xmin)/2; % Vector of X position for each y
+    dist_map(i) = abs(Xpos_D - Xpos(i)); % Vector of distances btw D & X pos
+    i = i + 1;
 end
 
-
-
 % Functions
-
-
-
 function new_im = shift_image(im, shift)
     [M,N]=size(im);
     if (shift>0)
