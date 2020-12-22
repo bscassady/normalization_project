@@ -60,7 +60,6 @@ hold off
 
 figure(3)
 subplot(1,2,1);imagesc(V);
-   
 
 %%
     
@@ -113,7 +112,6 @@ for y = Y_BB:(Y_BB + Height_BB)
     i = i + 1;
 end
 
-%%
 %Segmentation of ipsilateral and contralateral hemispheres of the brain
 V_clean=V.*int16(binary_mask(V, 80));
 figure(4)
@@ -124,6 +122,7 @@ subplot(1,3,1);imagesc(Hipsi);
 subplot(1,3,2);imagesc(Hcontra);
 subplot(1,3,3);imagesc(Hsymcontra);
 
+%%
 % Functions
 function new_im = shift_image(im, shift)
     [M,N]=size(im);
