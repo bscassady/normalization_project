@@ -10,17 +10,22 @@ subplot(1,2,2);imshow(maskV);
 %bonding ellipse of the original image
 el = regionprops(maskV, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
 maskV = imrotate(maskV,90);
+V=imrotate(V,90);
 [M,N] = size(maskV);
 
 propsV = regionprops(maskV, 'BoundingBox');
 bbxV = vertcat(propsV.BoundingBox);
 center = el(1).Centroid(2); 
 shift1 = center - N/2;%Shift necessary to center the image
-V_shift = shift_image(maskV, shift1); 
+V_shift = shift_image(maskV, shift1);
+
+V=shift_image(V, shift1);
 figure(2);
 subplot(1,2,1);imshow(V_shift);% shift the center of the ellipse on the median vertical line of the image
 angle1 = -el(1).Orientation;
 V_rot = imrotate(V_shift, angle1);% rotate the brain so that major axis of the ellipse alings with the median line
+
+V=imrotate(V,angle1);
 [M2, N2] = size(V_rot);
 if mod(N2,2)==1 
     N2 = N2-1;
@@ -32,9 +37,8 @@ V_line(:,int16(N2/2))=ones(M2,1)*255; %The brain should be centered
 subplot(1,2,2); imshow(V_line);
 
 
-
 % Create Bounding ellipse and display it on mask
-el = regionprops(V_line, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
+el = regionprops(V_rot, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
 
 subplot(1,2,2); imshow(V_line);
 
@@ -54,7 +58,8 @@ hold on
 
 hold off
 
-
+figure(3)
+subplot(1,2,1);imagesc(V);
    
 
 %%
@@ -108,6 +113,17 @@ for y = Y_BB:(Y_BB + Height_BB)
     i = i + 1;
 end
 
+%%
+%Segmentation of ipsilateral and contralateral hemispheres of the brain
+V_clean=V.*int16(binary_mask(V, 80));
+figure(4)
+imagesc(V_clean);
+[Hipsi, Hcontra,Hsymcontra]=partition(V_clean);
+figure(5)
+subplot(1,3,1);imagesc(Hipsi);
+subplot(1,3,2);imagesc(Hcontra);
+subplot(1,3,3);imagesc(Hsymcontra);
+
 % Functions
 function new_im = shift_image(im, shift)
     [M,N]=size(im);
@@ -132,4 +148,22 @@ function new_im = center_image(im)
     else
         new_im = im;
     end
+end
+
+
+function [Hipsi, Hcontra,Hsymcontra]=partition(im)
+    [M,N]=size(im);
+    left=im(:,1:int16(N/2));
+    right=im(:,int16(N/2)+1:int16(N));
+    average_left=sum(sum(left)/nnz(left));
+    average_right=sum(sum(right)/nnz(right));
+    if average_left>average_right
+        Hipsi=left;
+        Hcontra=right;
+    end
+    if average_right>average_left
+        Hipsi=right;
+        Hcontra=left;
+    end
+    Hsymcontra = Hcontra(:, end:-1:1);
 end
