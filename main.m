@@ -125,7 +125,7 @@ imagesc(V_clean);
 figure(5)
 subplot(1,3,1);imagesc(Hipsi);
 subplot(1,3,2);imagesc(Hcontra);
-subplot(1,3,3);imagesc(Hsymcontra);
+subplot(1,3,3);imagesc(Hipsi-Hsymcontra);
 % Functions
 
 
@@ -158,6 +158,10 @@ end
 
 function [Hipsi, Hcontra,Hsymcontra]=partition(im)
     [M,N]=size(im);
+    if mod(N,2)==1 % change the size of A_rot if the width is an odd number of pixels
+        N = N-1;
+        im = im(:, 1:N);
+    end
     left=im(:,1:int16(N/2));
     right=im(:,int16(N/2)+1:int16(N));
     average_left=sum(sum(left)/nnz(left));
