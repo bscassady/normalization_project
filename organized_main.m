@@ -32,6 +32,7 @@ hold off
 
 %%
 % 2.1.3 Rotate the image to align the major axis of the ellipse with the vertical axis
+[M,N] = size(V);
 center = el(1).Centroid;
 shift1 = int16(center(1) - M/2);
 shift2 =  int16(center(2) - N/2);% Shift necessary to center the image
@@ -108,7 +109,7 @@ end
 V_clean = V.*int16(binary_mask(V, 80));
 figure(3), colormap('gray')
 imagesc(V_clean);
-[Hipsi, Hcontra,Hsymcontra] = partition(V_clean);
+[Hipsi, Hcontra, Hsymcontra] = partition(V_clean);
 figure(4), colormap('gray')
 subplot(1,3,1);imagesc(Hipsi);
 subplot(1,3,2);imagesc(Hcontra);
@@ -117,6 +118,8 @@ subplot(1,3,3);imagesc(Hsymcontra);
 %%
 % 2.2.2 Rotate the Hcontra image horizontally around the median axis Am to get Hsymcontra image
 
+% cf previous section (2.2.1)
+
 %%
 % 2.2.3 Automate the previous steps and propose a function that takes an image 2D diffusion MRI
 % and returns the two corresponding Hipsi and Hsymcontra images.
@@ -124,7 +127,6 @@ subplot(1,3,3);imagesc(Hsymcontra);
 %%
 % 2.3.1 Are the parts of the brain on the Hipsi and Hsymcontra images well superposed?
 
-%%
 % 2.3.2 Use the Hsymcontra image to normalize voxel to voxel the Hipsi image
 
 %%
