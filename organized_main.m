@@ -127,7 +127,14 @@ subplot(1,3,3);imagesc(Hsymcontra);
 %%
 % 2.3.1 Are the parts of the brain on the Hipsi and Hsymcontra images well superposed?
 
+prop_pix_common = similarity(Hipsi, Hsymcontra);
+
 % 2.3.2 Use the Hsymcontra image to normalize voxel to voxel the Hipsi image
+
+%Fonction normalization_hem à vérifier quand on aura verticalisé la ligne de séparation
+
+normed_hem = normalization_hem(Hipsi, Hsymcontra);
+%figure(5), imagesc(normed_hem);
 
 %%
 % 2.3.3 What is the effect on artifacts? Are they eliminated?
