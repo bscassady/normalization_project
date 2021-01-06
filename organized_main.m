@@ -99,10 +99,10 @@ end
 % Give the line (which we will call the median axis Am) which best approximates the longitudinal
 % fissure. Does this line coincide with the line D?
 
-a1 = Xpos\Ypos;
-Y_linear_reg = a1*Xpos;
-scatter(Xpos,Ypos);
-plot(Xpos,Y_linear_reg);
+lm = fitlm(Xpos,Ypos); % Linear model of longitudinal fissure
+coeff = lm.Coefficients.Estimate; % Get slope and intercept of linear model
+Am = coeff(1) * Xpos + coeff(2);
+figure, plot(lm);
 
 %%
 % 2.1.8 Rotate the image so that the center line Am is aligned with the vertical axis
