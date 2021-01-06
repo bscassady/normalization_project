@@ -32,7 +32,7 @@ hold off
 
 %%
 % 2.1.3 Rotate the image to align the major axis of the ellipse with the vertical axis
-[M,N]=size(V);
+[M,N] = size(V);
 center = el(1).Centroid;
 shift1 = int16(center(1) - M/2);
 shift2 =  int16(center(2) - N/2);% Shift necessary to center the image
@@ -79,6 +79,7 @@ figure(1), subplot(1,2,1), line(x,y, 'Color','red','LineWidth',2); %Approximatio
 % automatic method to find line to line the position of the longitudinal fissure and give a map of uncertainty of its position
 
 Xpos = zeros(Height_BB,1); % Position en x des points centraux du cerveau
+Ypos = zeros(Height_BB,1); % Position en y des points centraux du cerveau
 dist_map = zeros(Height_BB,1); % Distance entre Ypos et Xpos_D
 i = 1;
 
@@ -88,6 +89,7 @@ for y = Y_BB:(Y_BB + Height_BB)
     [maxi,Xmax] = max(derivative); % Get max of derivative
     [mini,Xmin] = min(derivative); % Get min of derivative
     Xpos(i) = Xmin + (Xmax - Xmin)/2; % Vector of X position for each y
+    Ypos(i) = y; % Vector of Y position for each Xpos
     dist_map(i) = abs(Xpos_D - Xpos(i)); % Vector of distances btw D & X pos
     i = i + 1;
 end
@@ -97,7 +99,10 @@ end
 % Give the line (which we will call the median axis Am) which best approximates the longitudinal
 % fissure. Does this line coincide with the line D?
 
-a1 = Xpos/V();
+a1 = Xpos\Ypos;
+Y_linear_reg = a1*Xpos;
+scatter(Xpos,Ypos);
+plot(Xpos,Y_linear_reg);
 
 %%
 % 2.1.8 Rotate the image so that the center line Am is aligned with the vertical axis
@@ -111,7 +116,7 @@ a1 = Xpos/V();
 V_clean = V.*int16(binary_mask(V, 80));
 figure(3), colormap('gray')
 imagesc(V_clean);
-[Hipsi, Hcontra,Hsymcontra] = partition(V_clean);
+[Hipsi, Hcontra, Hsymcontra] = partition(V_clean);
 figure(4), colormap('gray')
 subplot(1,3,1);imagesc(Hipsi);
 subplot(1,3,2);imagesc(Hcontra);
@@ -120,6 +125,8 @@ subplot(1,3,3);imagesc(Hsymcontra);
 %%
 % 2.2.2 Rotate the Hcontra image horizontally around the median axis Am to get Hsymcontra image
 
+% cf previous section (2.2.1)
+
 %%
 % 2.2.3 Automate the previous steps and propose a function that takes an image 2D diffusion MRI
 % and returns the two corresponding Hipsi and Hsymcontra images.
@@ -127,8 +134,14 @@ subplot(1,3,3);imagesc(Hsymcontra);
 %%
 % 2.3.1 Are the parts of the brain on the Hipsi and Hsymcontra images well superposed?
 
-%%
+prop_pix_common = similarity(Hipsi, Hsymcontra);
+
 % 2.3.2 Use the Hsymcontra image to normalize voxel to voxel the Hipsi image
+
+%Fonction normalization_hem à vérifier quand on aura verticalisé la ligne de séparation
+
+normed_hem = normalization_hem(Hipsi, Hsymcontra);
+%figure(5), imagesc(normed_hem);
 
 %%
 % 2.3.3 What is the effect on artifacts? Are they eliminated?
