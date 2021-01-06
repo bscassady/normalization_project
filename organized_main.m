@@ -32,6 +32,7 @@ hold off
 
 %%
 % 2.1.3 Rotate the image to align the major axis of the ellipse with the vertical axis
+[M,N]=size(V);
 center = el(1).Centroid;
 shift1 = int16(center(1) - M/2);
 shift2 =  int16(center(2) - N/2);% Shift necessary to center the image
@@ -95,6 +96,8 @@ end
 % 2.1.7
 % Give the line (which we will call the median axis Am) which best approximates the longitudinal
 % fissure. Does this line coincide with the line D?
+
+a1 = Xpos/V();
 
 %%
 % 2.1.8 Rotate the image so that the center line Am is aligned with the vertical axis
