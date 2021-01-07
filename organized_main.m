@@ -33,28 +33,32 @@ hold off
 %%
 % 2.1.3 Rotate the image to align the major axis of the ellipse with the vertical axis
 [M,N] = size(V);
-center = el(1).Centroid;
-shift1 = int16(center(1) - M/2);
-shift2 =  int16(center(2) - N/2);% Shift necessary to center the image
-V_shift = circshift(maskV, [-shift2 -shift1]);
-ellipse_test=regionprops(V_shift, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
-e=ellipse_test(1).Centroid(2);
-V = circshift(V, [shift1 shift2]);
+angle1 = -90-el(1).Orientation;
+maskV_rot = imrotate(maskV, angle1); % Rotate the brain so that major axis of the ellipse aligns with the median line
+
+V_rot = imrotate(V,angle1);%Real image centered and rotated
+e=ellipse_test(1).Centroid(2);[M2, N2] = size(V_rot);
+
+
+
+ellipse_rotated = regionprops(maskV_rot, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});%ellipse of the rotated image
+center = ellipse_rotated(1).Centroid;
+centre=[M2/2 N2/2];
+shift1 = int16(center(1) - M2/2);
+shift2 =  int16(center(2) - N2/2);% Shift necessary to center the image
+maskV_shift = circshift(maskV_rot, [-shift2 -shift1]);
+ellipse_test=regionprops(maskV_shift, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
+center=ellipse_test(1).Centroid;
+V_shift = circshift(V_rot, [-shift2 -shift1]);%Real image centered
 figure(2);
-subplot(1,2,1);imshow(V_shift); % Shift the center of the ellipse on the median vertical line of the image
-angle1 = 90+el(1).Orientation;
-V_rot = imrotate(V_shift, angle1); % Rotate the brain so that major axis of the ellipse aligns with the median line
+subplot(1,2,1);imshow(maskV_shift); % Shift the center of the ellipse on the median vertical line of the image
 
-V = imrotate(V,angle1);
-[M2, N2] = size(V_rot);
-if mod(N2,2)==1 
-    N2 = N2-1;
-    V_rot = V_rot(:, 1:N2);
-end
-V_line = V_rot;
-V_line(:,int16(N2/2))=ones(M2,1)*255; % The brain should be centered 
+maskV_line = maskV_shift;
+maskV_line(:,int16(N2/2))=ones(M2,1)*255; % The brain should be centered 
 
-subplot(1,2,2); imshow(V_line);
+V_line=V_shift;
+V_line(:,int16(N2/2))=ones(M2,1)*255;
+subplot(1,2,2), colormap('gray'); imagesc(V_line);
 
 %%
 % 2.1.4 Calculate the bounding box of the brain
@@ -71,49 +75,77 @@ rectangle('Position', [BB.BoundingBox(1), BB.BoundingBox(2), BB.BoundingBox(3), 
 lx = [(X_BB + Width_BB/2) (X_BB + Width_BB/2)];
 ly = [Y_BB (Y_BB + Height_BB)];
 Xpos_D = X_BB + Width_BB/2;
-figure(1), subplot(1,2,1), line(x,y, 'Color','red','LineWidth',2); %Approximation not good
+figure(1), subplot(1,2,1), line(lx,ly, 'Color','red','LineWidth',2); %Approximation not good
 
 %%
 % 2.1.6
 % Using the position information of D and the profile of the gray level in the image along the lines horizontal, propose an
 % automatic method to find line to line the position of the longitudinal fissure and give a map of uncertainty of its position
 
-Xpos = zeros(Height_BB,1); % Position en x des points centraux du cerveau
-Ypos = zeros(Height_BB,1); % Position en y des points centraux du cerveau
-dist_map = zeros(Height_BB,1); % Distance entre Ypos et Xpos_D
-i = 1;
 
-for y = Y_BB:(Y_BB + Height_BB)
-    profile = V(X_BB : X_BB + Width_BB,y); % Creer le profil d'intensite
-    derivative = diff(profile); % Derivee de proche en proche du profil
-    [maxi,Xmax] = max(derivative); % Get max of derivative
-    [mini,Xmin] = min(derivative); % Get min of derivative
-    Xpos(i) = Xmin + (Xmax - Xmin)/2; % Vector of X position for each y
-    Ypos(i) = y; % Vector of Y position for each Xpos
-    dist_map(i) = abs(Xpos_D - Xpos(i)); % Vector of distances btw D & X pos
-    i = i + 1;
-end
 
+
+[V_fis fissure]=get_fissure(V,BB,0.04);%Detection of the fissure in OG image 
 %%
 % 2.1.7
 % Give the line (which we will call the median axis Am) which best approximates the longitudinal
 % fissure. Does this line coincide with the line D?
+figure(4);colormap('gray');
+imagesc(V_fis); title('Longitudinal fissure');
+%Linear approximation of the fissure
+fissure_trans = transpose(fissure);
+y_approxi = fissure_trans(1,1:end);
+x_approxi = double(int16(box.BoundingBox(2)):1:int16(box.BoundingBox(2))+size(fissure,1)-1);
 
-lm = fitlm(Xpos,Ypos); % Linear model of longitudinal fissure
-coeff = lm.Coefficients.Estimate; % Get slope and intercept of linear model
-Am = coeff(1) * Xpos + coeff(2);
-figure, plot(lm);
+p_transpose = polyfit(x_approxi,y_approxi,1); %linear equation for transposed line
 
+x_approxi  = double(1:1:size(V_fis,1));
+
+p = [1/p_transpose(1) -(p_transpose(2)/p_transpose(1))]; %return linear equation to original axis
+
+Am = p(1).*x_approxi+p(2); %line approximation
+hold on
+plot(x_approxi,Am,'r','Linewidth',2);
 %%
 % 2.1.8 Rotate the image so that the center line Am is aligned with the vertical axis
+angle2 = atan(p(1))*(180/pi);%Angle between Am and vertical axis
+   
+if angle2 >= 0
+    angle2 = angle2-90;
+    V_rot = imrotate(V, angle2);
+    maskV_rot = imrotate(maskV, angle2);
+else
+    angle2 = angle2 + 90;
+    A_rot = imrotate(V, angle2);
+    maskV_rot = imrotate(maskV, angle2);
+end 
+%Final shifting and centering 
+ellipse_rotated = regionprops(maskV_rot, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
+center = ellipse_rotated(1).Centroid;
+[M N]=size(maskV_rot);
+centre=[M/2 N/2];
+shift1 = int16(center(1) - M/2);
+shift2 =  int16(center(2) - N/2);% Shift necessary to center the image
+maskV_shift = circshift(maskV_rot, [-shift2 -shift1]);
+ellipse_test=regionprops(maskV_shift, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
+center=ellipse_test(1).Centroid;
+V_shift = circshift(V_rot, [-shift2 -shift1]);%Real image centered
+figure(5);
+subplot(1,2,1);imagesc(V_shift);;title('rotated with longitudinal fissure');
+
+
+
+
+
 
 %%
 % 2.1.9 How would you extend the method of detection of longitudinal fissure for a 
 % 3D diffusion MRI image covering completeness of the brain ?
-
+%Creating another loop for parsing the third dimension. Otherwise, the
+%detection should less or more the same. 
 %%
 % 2.2.1 Create an image of each brain hemisphere: Hipsi and Hcontra
-V_clean = V.*int16(binary_mask(V, 80));
+V_clean = V_shift.*int16(binary_mask(V_shift, 80));
 figure(3), colormap('gray')
 imagesc(V_clean);
 [Hipsi, Hcontra, Hsymcontra] = partition(V_clean);
@@ -175,4 +207,21 @@ function [Hipsi, Hcontra, Hsymcontra] = partition(im)
         Hcontra=left;
     end
     Hsymcontra = Hcontra(:, end:-1:1);
+end
+
+function [A_fissure, fissure] = get_fissure(im, box, width)
+    [M, N] = size(im);
+    W=N/2;
+    A_fissure = im;
+    fissure = ones(box.BoundingBox(4),1)*N/2; % fissure vector
+    for i=(box.BoundingBox(2)-0.5):(box.BoundingBox(2)+box.BoundingBox(4)-0.5)
+        profile = A_fissure(i,int16(W-width*N):int16(W+width*N)); % grey value along the interval
+        derivative = diff(profile); % Derivee de proche en proche du profil
+        [maxi,Xmax] = max(derivative); % Get max of derivative
+        [mini,Xmin] = min(derivative); % Get min of derivative
+        pos = uint8(W-width*N +Xmin + (Xmax - Xmin)/2); % Vector of X position for each y
+
+        fissure(i,1) = pos; % keep the position in memory
+        A_fissure(i, pos) = 255; % fissure line in white  
+    end
 end
