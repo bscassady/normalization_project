@@ -172,9 +172,8 @@ title('Frome left to right: ipsilateral , contralateral and symmetrical of contr
 
 prop_pix_common = similarity(Hipsi, Hsymcontra);
 
+%%
 % 2.3.2 Use the Hsymcontra image to normalize voxel to voxel the Hipsi image
-
-%Fonction normalization_hem à vérifier quand on aura verticalisé la ligne de séparation
 
 normed_hem = normalization_hem(Hipsi, Hsymcontra);
 figure(8), colormap('gray'), imagesc(normed_hem);
@@ -184,13 +183,32 @@ figure(8), colormap('gray'), imagesc(normed_hem);
 % or exacerbated? Are poorly defined lesions better visible now? Would it be easier
 % automatically cut the lesion after normalization?
 
+% Artifacts not eliminated. Lesion is not very visible, yet it is the only
+% part not hollow. Indeed, the brain is not perfectly symetric. Therefore,
+% the inside of the brain is correctly removed, except for the lesion,
+% while every contour can be seen on the normalized image. It makes a lot
+% of artifacts, which canno't be removed with a method as simple as the one
+% we used. 
 %%
 % 2.3.4 Apply a Gaussian blur to the Hsymcontra image before using for normalization of Hipsi.
 % Does this improve the quality of standardization? What is the optimum value of sigma?
 
+Gaussian_hsymcontra = imgaussfilt(Hsymcontra, 4);
+gauss_normed_hem = normalization_hem(Hipsi, Gaussian_hsymcontra);
+figure(10), colormap('gray'), imagesc(gauss_normed_hem);
+
+% With a sigma too small, the lesion is not yet easy to distinguish from
+% the contour residus. Yet, as we rise the value, the background becomes
+% gray and lights up. We need it to stay with a different shade than the
+% lesion, and we don't want the lesion to spread too much. The best
+% compromise seems to be a sigma of 4. We still see the contours, however
+% the lesion is clearly shown.
+
 %%
 % 2.3.5 When the lesion is not located in a single hemisphere, will that be a problem? An image
 % where the lesion reaches both hemispheres is provided for discussion
+
+
 
 %%
 % Functions
@@ -226,4 +244,32 @@ function [Hipsi, Hcontra, Hsymcontra] = partition(im)
 %         Hcontra=left;
 %     end
     Hsymcontra = Hcontra(:, end:-1:1);
+end
+
+function prop_common = similarity(A1, B1)
+    % Gives the proportion of pixels in common between two binary masks
+    [height, width] = size(A1);
+    nb_common = 0;
+    total = 0;
+    for i = 1:height  
+        for j = 1:width
+            total = total + 1;
+            if A1(i,j) == B1(i,j)
+                nb_common = nb_common + 1;
+            end
+        end
+    end
+    prop_common = nb_common/total;
+end
+
+function normed_hipsi = normalization_hem(Hipsi, Hsymcontra)
+    % Normalizes Hipsi using Hsymcontra : for every pixel of binary Hipsi,
+    % normed_hipsi is abs of Hipsi minus Hsymcontra
+    [height, width] = size(Hipsi);
+    normed_hipsi = zeros(height, width);
+    for i = 1:height
+        for j = 1:width
+            normed_hipsi(i,j) = abs(Hipsi(i,j)-Hsymcontra(i,j));
+        end
+    end
 end
