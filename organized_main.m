@@ -215,15 +215,15 @@ function [Hipsi, Hcontra, Hsymcontra] = partition(im)
     [~,N]=size(im);
     left=im(:,1:int16(N/2));
     right=im(:,int16(N/2)+1:int16(N));
-    average_left=sum(sum(left)/nnz(left));
-    average_right=sum(sum(right)/nnz(right));
-    if average_left>average_right
-        Hipsi=left;
-        Hcontra=right;
-    end
-    if average_right>average_left
-        Hipsi=right;
-        Hcontra=left;
-    end
+%     average_left=sum(sum(left)/nnz(left));
+%     average_right=sum(sum(right)/nnz(right));
+%     if average_left>average_right
+%         Hipsi=left;
+%         Hcontra=right;
+%     end
+%     if average_right>average_left
+%         Hipsi=right;
+%         Hcontra=left;
+%     end
     Hsymcontra = Hcontra(:, end:-1:1);
 end
