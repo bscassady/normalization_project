@@ -168,10 +168,15 @@ title('From left to right: ipsilateral , contralateral and symmetrical of contra
 % 2.2.3 Automate the previous steps and propose a function that takes an image 2D diffusion MRI
 % and returns the two corresponding Hipsi and Hsymcontra images.
 
+% Function "partition", which takes an MRI image as parameter and returns Hipsi, Hcontra and Hysmcontra 
+
 %%
 % 2.3.1 Are the parts of the brain on the Hipsi and Hsymcontra images well superposed?
 
 prop_pix_common = similarity(Hipsi, Hsymcontra);
+
+% The proportion of similarity between the binary masks of Hipsi and
+% Hsymcontra is about 94 %. The images are quite well superposed.
 
 %%
 % 2.3.2 Use the Hsymcontra image to normalize voxel to voxel the Hipsi image
@@ -261,8 +266,11 @@ function [Hipsi, Hcontra, Hsymcontra] = partition(im)
     Hsymcontra = Hcontra(:, end:-1:1);
 end
 
-function prop_common = similarity(A1, B1)
-    % Gives the proportion of pixels in common between two binary masks
+function prop_common = similarity(A, B)
+    % Gives the proportion of pixels in common between two images converted
+    % to binary masks
+    A1 = binary_mask(A, 80);
+    B1 = binary_mask(B, 80);
     [height, width] = size(A1);
     nb_common = 0;
     total = 0;
