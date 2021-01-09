@@ -97,19 +97,19 @@ figure(4),colormap('gray');
 imagesc(V_fis); title('Longitudinal fissure');
 
 %Linear approximation of the fissure
-fissure_trans = transpose(fissure);
-y_approxi = fissure_trans(1,1:end);
-x_approxi = double(int16(X_BB):1:int16(X_BB)+size(fissure,1)-1);
+fissure_T = transpose(fissure);
+y = fissure_T(1,1:end);
+x = double(int16(X_BB):1:int16(X_BB)+size(fissure,1)-1);
 
-p_transpose = polyfit(x_approxi,y_approxi,1); %linear equation for transposed line
+lm = polyfit(x,y,1); %linear equation for transposed line
 
-x_approxi  = double(1:1:size(V_fis,1));
+x  = double(1:1:size(V_fis,1));
 
-p = [1/p_transpose(1) -(p_transpose(2)/p_transpose(1))]; %return linear equation to original axis
+p = [1/lm(1) -(lm(2)/lm(1))]; %return linear equation to original axis
 
-Am = p(1).*x_approxi+p(2); %line approximation
+Am = p(1).*x+p(2); %line approximation
 hold on
-plot(x_approxi,Am,'y','Linewidth',1);
+plot(x,Am,'y','Linewidth',1);
 
 %%
 % 2.1.8 Rotate the image so that the center line Am is aligned with the vertical axis
