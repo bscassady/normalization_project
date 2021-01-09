@@ -214,7 +214,20 @@ figure(9), colormap('gray'), imagesc(gauss_normed_hem);title("Normalized ipsilat
 % 2.3.5 When the lesion is not located in a single hemisphere, will that be a problem? An image
 % where the lesion reaches both hemispheres is provided for discussion
 
+figure, imagesc(E1);
 
+% Our nomalization methods are not suitable for an image where the lesion
+% reaches both hemispheres. Each hemisphere is still be easy to
+% isolate, yet we are not able to use the Hsymcontra to normalize the
+% Hipsi (and vice versa), as both contain a lesion area : our method
+% substracts pixel values to clear as much as possible the inside of the
+% brain, so that the lesion appears clearly. Even if we keep the absolute
+% value, we would see the lesions of both hemispheres on the same one,
+% without knowing which injury belongs to which one. 
+% A solution may be to study each hemisphere separately. Within a patients
+% database, we would choose a hemisphere without lesion best superposed
+% with our Hipsi or Hcontra hemispheres with lesion, and use it to
+% normalize our image.
 
 %%
 % Functions
