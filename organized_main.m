@@ -1,5 +1,5 @@
 % Choose brain image
-V = B1;
+V = imrotate(niftiread('data/C2.nii'),90);
 
 % Display brain image
 figure(1),subplot(1,2,1), colormap('gray');
@@ -134,8 +134,7 @@ shift2 =  int16(center(2) - N/2);% Shift necessary to center the image
 
 V_shift = circshift(V_rot, [-shift2 -shift1]);%Real image centered
 
-figure(5);
-subplot(1,2,1), colormap('gray'), imagesc(V_shift), title('Brain rotated following the longitudinal fissure');
+figure(5), colormap('gray'), imagesc(V_shift), title('Brain rotated following the longitudinal fissure');
 
 %%
 % 2.1.9 How would you extend the method of detection of longitudinal fissure for a 
@@ -233,16 +232,16 @@ function [Hipsi, Hcontra, Hsymcontra] = partition(im)
     [~,N]=size(im);
     left=im(:,1:int16(N/2));
     right=im(:,int16(N/2)+1:int16(N));
-%     average_left=sum(sum(left)/nnz(left));
-%     average_right=sum(sum(right)/nnz(right));
-%     if average_left>average_right
-%         Hipsi=left;
-%         Hcontra=right;
-%     end
-%     if average_right>average_left
-%         Hipsi=right;
-%         Hcontra=left;
-%     end
+    average_left=sum(sum(left)/nnz(left));
+    average_right=sum(sum(right)/nnz(right));
+    if average_left>average_right
+        Hipsi=left;
+        Hcontra=right;
+    end
+    if average_right>average_left
+        Hipsi=right;
+        Hcontra=left;
+    end
     Hsymcontra = Hcontra(:, end:-1:1);
 end
 
