@@ -128,14 +128,15 @@ end
 
 %Final shifting and centering 
 [M,N] = size(maskV_rot);
-
+ellipse_rotated = regionprops(maskV_rot, {'Centroid', 'MajorAxisLength', 'MinorAxisLength', 'Orientation'});
+center = ellipse_rotated(1).Centroid;
 shift1 = int16(center(1) - M/2);
 shift2 =  int16(center(2) - N/2);% Shift necessary to center the image
 
 V_shift = circshift(V_rot, [-shift2 -shift1]);%Real image centered
 
 figure(5);
-subplot(1,2,1), colormap('gray'), imagesc(V_shift), title('Brain rotated following the longitudinal fissure');
+colormap('gray'), imagesc(V_shift), title('Brain rotated following the longitudinal fissure');
 
 %%
 % 2.1.9 How would you extend the method of detection of longitudinal fissure for a 
@@ -147,7 +148,7 @@ subplot(1,2,1), colormap('gray'), imagesc(V_shift), title('Brain rotated followi
 %%
 % 2.2.1 Create an image of each brain hemisphere: Hipsi and Hcontra
 
-V_clean = V.*int16(binary_mask(V, 80));
+V_clean = V_shift.*int16(binary_mask(V_shift, 80));
 figure(6), colormap('gray'), imagesc(V_clean);
 title('Brain image centered and without artefacts');
 
@@ -156,7 +157,7 @@ figure(7), colormap('gray')
 subplot(1,3,1);imagesc(Hipsi);
 subplot(1,3,2);imagesc(Hcontra);
 subplot(1,3,3);imagesc(Hsymcontra);
-title('Frome left to right: ipsilateral , contralateral and symmetrical of contralteral hemispheres');
+title('From left to right: ipsilateral , contralateral and symmetrical of contralteral hemispheres');
 
 %%
 % 2.2.2 Rotate the Hcontra image horizontally around the median axis Am to get Hsymcontra image
@@ -176,7 +177,7 @@ prop_pix_common = similarity(Hipsi, Hsymcontra);
 % 2.3.2 Use the Hsymcontra image to normalize voxel to voxel the Hipsi image
 
 normed_hem = normalization_hem(Hipsi, Hsymcontra);
-figure(8), colormap('gray'), imagesc(normed_hem);
+figure(8), colormap('gray'), imagesc(normed_hem);title("Normalized ipsilateral hemisphere");
 
 %%
 % 2.3.3 What is the effect on artifacts? Are they eliminated?
@@ -195,7 +196,7 @@ figure(8), colormap('gray'), imagesc(normed_hem);
 
 Gaussian_hsymcontra = imgaussfilt(Hsymcontra, 4);
 gauss_normed_hem = normalization_hem(Hipsi, Gaussian_hsymcontra);
-figure(10), colormap('gray'), imagesc(gauss_normed_hem);
+figure(9), colormap('gray'), imagesc(gauss_normed_hem);title("Normalized ipsilateral hemisphere using Gaussian blur on Hsymcontra");
 
 % With a sigma too small, the lesion is not yet easy to distinguish from
 % the contour residus. Yet, as we rise the value, the background becomes
